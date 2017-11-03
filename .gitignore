@@ -3,3 +3,8 @@
 /FarseerUnityDemo/FarseerUnityDemo.sln
 /FarseerUnityDemo/.vs
 /FarseerUnityDemo/Library
+FarseerUnityDemo.csproj
+FarseerUnityDemo.Editor.csproj
+FarseerUnityDemo.sln
+.vs
+Library
