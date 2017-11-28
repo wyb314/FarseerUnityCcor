@@ -8,3 +8,4 @@ FarseerUnityDemo.Editor.csproj
 FarseerUnityDemo.sln
 .vs
 Library
+/FarseerUnityDemo/Temp
