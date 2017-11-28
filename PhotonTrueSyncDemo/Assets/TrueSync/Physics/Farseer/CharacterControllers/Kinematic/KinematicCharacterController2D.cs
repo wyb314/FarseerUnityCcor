@@ -21,6 +21,7 @@ namespace TrueSync.Physics2D.Specialized
         {
             this.world = world;
             this.body = body;
+            this.body.IgnoreGravity = true;
             this.shape = shape;
             this.fixture = this.body.FixtureList[0];
 
@@ -126,7 +127,7 @@ namespace TrueSync.Physics2D.Specialized
                     break;
                 }
 
-                UnityEngine.Debug.LogError("currentMovement->" + currentMovement);
+                //UnityEngine.Debug.LogError("currentMovement->" + currentMovement);
                 this.body.Position = startPosition + currentMovement;
 
                 UpdateContacts();
