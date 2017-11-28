@@ -8,6 +8,7 @@
 - Fixed TSPolygonCollider2D to allow concave shapes
 - Fixed string length limitation (256 bytes) on TrueSyncInput
 - Fixed issue that set position to zero when FreezePosition is marked on TSRigidBody
+- Fixed a bug with replay recording
 - Improved callback's call made by TrueSyncManager
 - Improved performance of FP operations (addition / subtraction / multiplication)
 - Improved StateTracker performance
