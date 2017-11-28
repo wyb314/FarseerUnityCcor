@@ -35,6 +35,8 @@ SOFTWARE.
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
+using FarseerUnity.Base.FarseerPhysics;
+using UnityEngine;
 
 namespace Microsoft.Xna.Framework
 {
@@ -582,6 +584,14 @@ namespace Microsoft.Xna.Framework
         }
 
         #endregion Operators
+
+
+        public static bool AreNumericallyEqual(FVector2 vector1, FVector2 vector2, float epsilon)
+        {
+            return Numeric.AreEqual(vector1.X, vector2.X, epsilon)
+                && Numeric.AreEqual(vector1.Y, vector2.Y, epsilon);
+        }
+
     }
 }
 

@@ -165,7 +165,7 @@ namespace FarseerPhysics.Dynamics.Contacts
         public float TOI;
         internal int TOICount;
         private ContactType _type;
-
+        
         private Contact(Fixture fA, int indexA, Fixture fB, int indexB)
         {
             Reset(fA, indexA, fB, indexB);
@@ -275,6 +275,7 @@ namespace FarseerPhysics.Dynamics.Contacts
             ChildIndexB = indexB;
 
             Manifold.PointCount = 0;
+            Manifold.PenetrationDepth = 0;
 
             NodeA.Contact = null;
             NodeA.Prev = null;
@@ -296,6 +297,7 @@ namespace FarseerPhysics.Dynamics.Contacts
             }
 
             TangentSpeed = 0;
+           
         }
 
         /// <summary>
@@ -463,7 +465,7 @@ namespace FarseerPhysics.Dynamics.Contacts
         /// <param name="manifold">The manifold.</param>
         /// <param name="transformA">The first transform.</param>
         /// <param name="transformB">The second transform.</param>
-        private void Evaluate(ref Manifold manifold, ref Transform transformA, ref Transform transformB)
+        public void Evaluate(ref Manifold manifold, ref Transform transformA, ref Transform transformB)
         {
             switch (_type)
             {

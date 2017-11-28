@@ -741,6 +741,8 @@ namespace FarseerPhysics.Collision
             // Prepare output.
             simplex.GetWitnessPoints(out output.PointA, out output.PointB);
             output.Distance = (output.PointA - output.PointB).Length();
+             
+
             output.Iterations = iter;
 
             // Cache the simplex.

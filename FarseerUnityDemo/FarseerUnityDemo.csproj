@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows:5</UnityBuildTarget>
     <UnityVersion>2017.1.0f3</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -182,6 +184,7 @@
     <Compile Include="Assets\FarseerUnity\Base\FarseerPhysics\Factories\FixtureFactory.cs" />
     <Compile Include="Assets\FarseerUnity\Base\FarseerPhysics\Factories\JointFactory.cs" />
     <Compile Include="Assets\FarseerUnity\Base\FarseerPhysics\Factories\LinkFactory.cs" />
+    <Compile Include="Assets\FarseerUnity\Base\FarseerPhysics\Numeric.cs" />
     <Compile Include="Assets\FarseerUnity\Base\FarseerPhysics\Settings.cs" />
     <Compile Include="Assets\FarseerUnity\Base\FSCollisionGroup.cs" />
     <Compile Include="Assets\FarseerUnity\Base\FSEnums.cs" />

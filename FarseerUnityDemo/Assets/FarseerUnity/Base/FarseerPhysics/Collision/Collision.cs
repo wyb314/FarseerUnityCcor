@@ -156,6 +156,8 @@ namespace FarseerPhysics.Collision
         public FixedArray2<ManifoldPoint> Points;
 
         public ManifoldType Type;
+
+        public float PenetrationDepth;
     }
 
     /// <summary>
@@ -638,6 +640,15 @@ namespace FarseerPhysics.Collision
             p0.Id.Key = 0;
 
             manifold.Points[0] = p0;
+
+#region Add Circle-Circle Penetration Depth generate code
+
+            d.Normalize();
+            manifold.LocalNormal = d;
+            manifold.PenetrationDepth = radius - (float) Math.Sqrt(distSqr);
+
+#endregion
+
         }
 
         /// <summary>
@@ -676,7 +687,7 @@ namespace FarseerPhysics.Collision
                     return;
                 }
 
-                if (s > separation)
+                if (s > separation)//圆渗透到多边形里的最大深度
                 {
                     separation = s;
                     normalIndex = i;
@@ -704,6 +715,13 @@ namespace FarseerPhysics.Collision
 
                 manifold.Points[0] = p0;
 
+                #region Add Circle-Polygon Penetration Depth generate code
+                
+               
+                manifold.PenetrationDepth = 0;
+
+                #endregion
+
                 return;
             }
 
@@ -722,10 +740,10 @@ namespace FarseerPhysics.Collision
                 manifold.PointCount = 1;
                 manifold.Type = ManifoldType.FaceA;
                 manifold.LocalNormal = cLocal - v1;
-                float factor = 1f /
-                               (float)
-                               Math.Sqrt(manifold.LocalNormal.X * manifold.LocalNormal.X +
+                float length = (float)Math.Sqrt(manifold.LocalNormal.X * manifold.LocalNormal.X +
                                          manifold.LocalNormal.Y * manifold.LocalNormal.Y);
+                float factor = 1f /
+                               (float)length;
                 manifold.LocalNormal.X = manifold.LocalNormal.X * factor;
                 manifold.LocalNormal.Y = manifold.LocalNormal.Y * factor;
                 manifold.LocalPoint = v1;
@@ -736,6 +754,12 @@ namespace FarseerPhysics.Collision
                 p0b.Id.Key = 0;
 
                 manifold.Points[0] = p0b;
+
+                #region Add Circle-Polygon Penetration Depth generate code
+
+                manifold.PenetrationDepth = radius - length;
+
+                #endregion
             }
             else if (u2 <= 0.0f)
             {
@@ -748,10 +772,10 @@ namespace FarseerPhysics.Collision
                 manifold.PointCount = 1;
                 manifold.Type = ManifoldType.FaceA;
                 manifold.LocalNormal = cLocal - v2;
-                float factor = 1f /
-                               (float)
-                               Math.Sqrt(manifold.LocalNormal.X * manifold.LocalNormal.X +
+
+                float length = (float)Math.Sqrt(manifold.LocalNormal.X * manifold.LocalNormal.X +
                                          manifold.LocalNormal.Y * manifold.LocalNormal.Y);
+                float factor = 1f / length;
                 manifold.LocalNormal.X = manifold.LocalNormal.X * factor;
                 manifold.LocalNormal.Y = manifold.LocalNormal.Y * factor;
                 manifold.LocalPoint = v2;
@@ -762,6 +786,12 @@ namespace FarseerPhysics.Collision
                 p0c.Id.Key = 0;
 
                 manifold.Points[0] = p0c;
+
+                #region Add Circle-Polygon Penetration Depth generate code
+
+                manifold.PenetrationDepth = radius - length;
+
+                #endregion
             }
             else
             {
@@ -785,6 +815,12 @@ namespace FarseerPhysics.Collision
                 p0d.Id.Key = 0;
 
                 manifold.Points[0] = p0d;
+
+                #region Add Circle-Polygon Penetration Depth generate code
+                
+                manifold.PenetrationDepth = radius - separation2;
+                UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + manifold.PenetrationDepth);
+                #endregion
             }
         }
 

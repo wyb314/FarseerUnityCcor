@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/FarseerUnity/Support Files/Tests/Scenes/TestCollisionEvents 1.unity
+- path: Assets/FarseerUnity/Support Files/Tests/Scenes/TestCollisionEvents.unity
   isLoaded: 1
   isActive: 1

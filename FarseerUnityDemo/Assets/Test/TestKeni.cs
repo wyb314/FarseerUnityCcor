@@ -1,9 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using FarseerPhysics.Collision;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Common;
 using FarseerPhysics.Dynamics;
+using FarseerPhysics.Dynamics.Contacts;
+using FarseerUnity.Base.FarseerPhysics;
 using Microsoft.Xna.Framework;
 using UnityEditor;
 using UnityEngine;
@@ -15,6 +18,7 @@ public class TestKeni : MonoBehaviour
     private Body body;
     private FSShapeComponent fsShapeComponent;
     private Shape shape;
+    private Fixture fixture;
     // Use this for initialization
     void Start ()
     {
@@ -23,6 +27,8 @@ public class TestKeni : MonoBehaviour
         shape = this.fsShapeComponent.GetShape();
         this.body = fsb.PhysicsBody;
         this.fsb.PhysicsBody.GravityScale = 0;
+        this.fixture = this.body.FixtureList[0];
+        Debug.LogError("Self BodyId->"+this.body.BodyId);
     }
 	
 	// Update is called once per frame
@@ -34,7 +40,10 @@ public class TestKeni : MonoBehaviour
 	    float val = h*h + v*v;
 	    if (val > 0)
 	    {
-            
+            FVector2 moveVelocity = new FVector2(h,v);
+	        moveVelocity.Normalize();
+	        moveVelocity = moveVelocity*moveSpeed;
+            this.Move(moveVelocity,Time.fixedDeltaTime);
 	        //this.fsb.PhysicsBody.LinearVelocity= new FVector2(h, v) * moveSpeed;
 	    }
 
@@ -62,7 +71,7 @@ public class TestKeni : MonoBehaviour
 
     }
 
-    private List<Fixture> _obstacles = new List<Fixture>();
+    private List<Contact> _obstacles = new List<Contact>();
     private void CollectObstacles(float radius)
     {
         if (this._obstacles.Count > 0)
@@ -72,11 +81,15 @@ public class TestKeni : MonoBehaviour
         AABB aabb;
         this.shape.ComputeAABB(out aabb, ref body.Xf, 0);
 
-        this.body.World.QueryAABB(a =>
+        this.body.World.QueryAABB(_fixture =>
         {
-            if (a.Shape != this.shape )
+
+            //if (_fixture != this.fixture && _fixture.ShapeType == ShapeType.Circle)
+            if (_fixture != this.fixture)
             {
-                this._obstacles.Add(a);
+                //UnityEngine.Debug.LogError("Body id->"+_fixture.Body.BodyId);
+                Contact contact = Contact.Create(this.fixture, 0, _fixture, 0);
+                this._obstacles.Add(contact);
             }
 
             return true;
@@ -89,6 +102,8 @@ public class TestKeni : MonoBehaviour
     private readonly List<Line> _bounds = new List<Line>();
     private readonly List<CCContact> _backupContacts = new List<CCContact>();
     private readonly List<CCContact> _contacts = new List<CCContact>();
+
+    float AllowedPenetration = 0.01f;
     private void Fly()
     {
         FVector2 desiredMovement = _desiredPosition - _oldPosition;
@@ -107,8 +122,7 @@ public class TestKeni : MonoBehaviour
         bool hasUnallowedContacts = true;
 
         int iterationCount = 0;
-
-
+        
         do
         {
             iterationCount++;
@@ -128,7 +142,7 @@ public class TestKeni : MonoBehaviour
 
                     float distance = FVector2.Dot(line.Normal, currentMovement);
 
-                    if (distance < 0)
+                    if (distance < AllowedPenetration)
                     {
                         FVector2 correctoin = line.Normal * (-distance);
                         currentMovement += correctoin;
@@ -186,10 +200,55 @@ public class TestKeni : MonoBehaviour
         _hasGroundContact = _backupHasGroundContact;
     }
 
+    public static bool AreEqual(float value1, float value2, float epsilon)
+    {
+        if (epsilon <= 0.0f)
+            throw new ArgumentOutOfRangeException("epsilon", "Epsilon value must be greater than 0.");
 
+        // Infinity values have to be handled carefully because the check with the epsilon tolerance
+        // does not work there. Check for equality in case they are infinite:
+        if (value1 == value2)
+            return true;
+
+        float delta = value1 - value2;
+        return (-epsilon < delta) && (delta < epsilon);
+    }
+
+    public float CollisionDetectionEpsilon = 0.001f;
 
     private void AddBounds(FVector2 position)
     {
+        int oldNumberOfBounds = _bounds.Count;
+        int numberOfContacts = _contacts.Count;
+        
+        for (int i = 0; i < numberOfContacts; i++)
+        {
+            var contact = _contacts[i];
+            FVector2 normal = contact.Normal;
+            float penetrationDepth = contact.PenetrationDepth;
+
+            //Debug.LogError("normal->" + normal+ " penetrationDepth->" + penetrationDepth);
+            Line line = new Line(normal, this.body.Position + normal * penetrationDepth);
+
+            bool lineIsNew = false;
+            int numberOfBounds = _bounds.Count;
+            for (int j = 0; j < numberOfBounds;j++)
+            {
+                Line existingLine = _bounds[j];
+                if (FVector2.AreNumericallyEqual(existingLine.Normal, line.Normal, CollisionDetectionEpsilon)
+             && FVector2.AreNumericallyEqual(existingLine.positoin, line.positoin, CollisionDetectionEpsilon))
+                {
+                    lineIsNew = false;
+                }
+            }
+
+            if (lineIsNew)
+            {
+                this._bounds.Add(line);
+            }
+
+        }
+
     }
 
     /// </remarks>
@@ -216,41 +275,42 @@ public class TestKeni : MonoBehaviour
 
     private void UpdateContacts()
     {
-        //_contacts.Clear();
-        //_hasGroundContact = null;
+        this._contacts.Clear();
+        _hasGroundContact = null;
 
-        //int numberOfObstacles = _obstacles.Count;
-        //for (int i = 0; i < numberOfObstacles; i++)
-        //{
-        //    var contactSet = _obstacles[i];
+        int numberOfObstacles = _obstacles.Count;
+        for (int i = 0; i < numberOfObstacles; i++)
+        {
+            var contact = this._obstacles[i];
 
-        //    // Let the collision detection compute the contact information (positions, normals, 
-        //    // penetration depths, etc.).
-        //    CollisionDetection.UpdateContacts(contactSet, 0);
 
-        //    AABB selfAabb;
-        //    this.shape.ComputeAABB(out selfAabb, ref body.Xf, 0);
-        //    AABB aabb;
-        //    contactSet.GetAABB(out aabb,0);
-        //    if (HaveContact(selfAabb, aabb))
-        //    {
-        //    }
-        //    else
-        //    {
-        //        contactSet.Body
-        //    }
-        //    int numberOfContacts = contactSet.Count;
-        //    for (int j = 0; j < numberOfContacts; j++)
-        //    {
-        //        var contact = contactSet[j];
-        //        _contacts.Add(new CCContact
-        //        {
-        //            Position = contact.PositionALocal,  // Position in local space of character.
-        //            Normal = -contact.Normal,           // Normal that points to character.
-        //            PenetrationDepth = contact.PenetrationDepth,
-        //        });
-        //    }
-        //}
+            contact.Update1();
+            
+            int pointCount = contact.Manifold.PointCount;
+            if (pointCount != 0)
+            {
+                for (int j = 0; j < pointCount; j++)
+                {
+                    Manifold manifold = contact.Manifold;
+                    ManifoldPoint point = manifold.Points[j];
+
+                    
+                    FVector2 contactPos = body.GetWorldPoint(point.LocalPoint);
+                    FVector2 normal = manifold.LocalNormal;
+                    Debug.LogError("contactPos-> " + contactPos+ " normal->" + normal + " penetrationDepth->" + manifold.PenetrationDepth);
+                    this._contacts.Add(new CCContact()
+                    {
+
+                        Position = body.GetWorldPoint(point.LocalPoint),
+                        Normal = -manifold.LocalNormal,
+                        PenetrationDepth = manifold.PenetrationDepth
+
+                    });
+                }
+            }
+        }
+
+
     }
 
     public static bool HaveContact(AABB aabbA, AABB aabbB)
@@ -260,6 +320,139 @@ public class TestKeni : MonoBehaviour
         return AABB.TestOverlap(ref aabbA, ref aabbB);
     }
 
+
+    
+
+}
+
+public static class ContactExtend
+{
+    internal static void Update1(this Contact contact)
+    {
+        Manifold oldManifold = contact.Manifold;
+
+            // Re-enable this contact.
+        contact.Flags |= ContactFlags.Enabled;
+
+        bool touching;
+        bool wasTouching = (contact.Flags & ContactFlags.Touching) == ContactFlags.Touching;
+
+        bool sensor = contact.FixtureA.IsSensor || contact.FixtureB.IsSensor;
+
+        Body bodyA = contact.FixtureA.Body;
+        Body bodyB = contact.FixtureB.Body;
+
+        //contact.Evaluate(ref contact.Manifold, ref bodyA.Xf, ref bodyB.Xf);
+        //return;
+        // Is this contact a sensor?
+        if (sensor)
+        {
+            Shape shapeA = contact.FixtureA.Shape;
+            Shape shapeB = contact.FixtureB.Shape;
+            touching = AABB.TestOverlap(shapeA, contact.ChildIndexA, shapeB, contact.ChildIndexB, ref bodyA.Xf, ref bodyB.Xf);
+
+                // Sensors don't generate manifolds.
+                contact.Manifold.PointCount = 0;
+        }
+        else
+        {
+            
+            contact.Evaluate(ref contact.Manifold, ref bodyA.Xf, ref bodyB.Xf);
+            touching = contact.Manifold.PointCount > 0;
+
+            // Match old contact ids to new contact ids and copy the
+            // stored impulses to warm start the solver.
+            for (int i = 0; i < contact.Manifold.PointCount; ++i)
+            {
+                ManifoldPoint mp2 = contact.Manifold.Points[i];
+                mp2.NormalImpulse = 0.0f;
+                mp2.TangentImpulse = 0.0f;
+                ContactID id2 = mp2.Id;
+
+                for (int j = 0; j < oldManifold.PointCount; ++j)
+                {
+                    ManifoldPoint mp1 = oldManifold.Points[j];
+
+                    if (mp1.Id.Key == id2.Key)
+                    {
+                        mp2.NormalImpulse = mp1.NormalImpulse;
+                        mp2.TangentImpulse = mp1.TangentImpulse;
+                        break;
+                    }
+                }
+                contact.Manifold.Points[i] = mp2;
+            }
+
+            if (touching != wasTouching)
+            {
+                bodyA.Awake = true;
+                bodyB.Awake = true;
+            }
+        }
+
+        if (touching)
+        {
+            contact.Flags |= ContactFlags.Touching;
+        }
+        else
+        {
+                contact.Flags &= ~ContactFlags.Touching;
+        }
+
+        if (wasTouching == false)
+        {
+            if (touching)
+            {
+
+                bool enabledA, enabledB;
+
+          
+                enabledA = true;
+
+           
+                enabledB = true;
+
+                contact.Enabled = enabledA && enabledB;
+
+                //// BeginContact can also return false and disable the contact
+                //if (enabledA && enabledB && contactManager.BeginContact != null)
+                //{
+                //        contact.Enabled = contactManager.BeginContact(this);
+                //}
+
+                // If the user disabled the contact (needed to exclude it in TOI solver) at any point by
+                // any of the callbacks, we need to mark it as not touching and call any separation
+                // callbacks for fixtures that didn't explicitly disable the collision.
+                if (!contact.Enabled)
+                {
+                   contact.Flags &= ~ContactFlags.Touching;
+                }
+
+
+            }
+        }
+        else
+        {
+            //if (touching == false)
+            //{
+            //    //Report the separation to both participants:
+            //    if (FixtureA != null && FixtureA.OnSeparation != null)
+            //        FixtureA.OnSeparation(FixtureA, FixtureB);
+
+            //    //Reverse the order of the reported fixtures. The first fixture is always the one that the
+            //    //user subscribed to.
+            //    if (FixtureB != null && FixtureB.OnSeparation != null)
+            //        FixtureB.OnSeparation(FixtureB, FixtureA);
+
+            //    if (contactManager.EndContact != null)
+            //        contactManager.EndContact(this);
+            //}
+        }
+
+        if (sensor)
+            return;
+    
+    }   
 }
 
 public class ContactSet
