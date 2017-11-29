@@ -28,7 +28,7 @@ public class TestKeni : MonoBehaviour
         this.body = fsb.PhysicsBody;
         this.fsb.PhysicsBody.GravityScale = 0;
         this.fixture = this.body.FixtureList[0];
-        Debug.LogError("Self BodyId->"+this.body.BodyId);
+        //Debug.LogError("Self BodyId->"+this.body.BodyId);
     }
 	
 	// Update is called once per frame
@@ -178,10 +178,10 @@ public class TestKeni : MonoBehaviour
             UpdateContacts();
 
             hasUnallowedContacts = HasUnallowedContact(currentMovement);
-            Debug.LogError("solverIterationCount : " + solverIterationCount + 
-                " movementDirIsInValid-> " + movementDirIsInValid + 
-                " currentMovement->" + currentMovement
-                + "hasUnallowedContacts->" + hasUnallowedContacts);
+            //Debug.LogError("solverIterationCount : " + solverIterationCount + 
+            //    " movementDirIsInValid-> " + movementDirIsInValid + 
+            //    " currentMovement->" + currentMovement
+            //    + "hasUnallowedContacts->" + hasUnallowedContacts);
         } while (hasUnallowedContacts && iterationCount < 4);
 
 
@@ -376,6 +376,8 @@ public class TestKeni : MonoBehaviour
             //    }
             //}
         }
+
+        Debug.LogError("this._contacts count : " + this._contacts.Count);
 
 
     }
