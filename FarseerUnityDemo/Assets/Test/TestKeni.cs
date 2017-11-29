@@ -153,7 +153,7 @@ public class TestKeni : MonoBehaviour
                     FVector2 vec2 = startPosition + currentMovement - line.positoin;
                     //float distance = FVector2.Dot(line.Normal, vec2) + 0.01f;
                     float distance = FVector2.Dot(line.Normal, vec2);
-                    UnityEngine.Debug.LogError("distance : " + distance.ToString("f6")+" normal: "+line.Normal);
+                    //UnityEngine.Debug.LogError("distance : " + distance.ToString("f6")+" normal: "+line.Normal);
                     if (distance < 0)
                     {
                         
