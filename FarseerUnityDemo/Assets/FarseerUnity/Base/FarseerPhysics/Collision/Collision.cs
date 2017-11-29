@@ -157,6 +157,8 @@ namespace FarseerPhysics.Collision
 
         public ManifoldType Type;
 
+        public FVector2 contactPoint;
+        public FVector2 WorldNormal;
         public float PenetrationDepth;
     }
 
@@ -641,13 +643,15 @@ namespace FarseerPhysics.Collision
 
             manifold.Points[0] = p0;
 
-#region Add Circle-Circle Penetration Depth generate code
-
+            #region Add Circle-Circle Penetration Depth generate code
             d.Normalize();
-            manifold.LocalNormal = d;
-            manifold.PenetrationDepth = radius - (float) Math.Sqrt(distSqr);
+            manifold.WorldNormal = d;
+            manifold.PenetrationDepth = radius - (float)Math.Sqrt(distSqr);
+            FVector2 contactPoint = pA + d*circleA.Radius;
+            manifold.contactPoint = MathUtils.MulT(ref xfA, contactPoint);
 
-#endregion
+
+            #endregion
 
         }
 
@@ -716,9 +720,11 @@ namespace FarseerPhysics.Collision
                 manifold.Points[0] = p0;
 
                 #region Add Circle-Polygon Penetration Depth generate code
-                
                
-                manifold.PenetrationDepth = 0;
+                FVector2 worldNormal = MathUtils.Mul(ref xfA, manifold.LocalNormal);
+                worldNormal.Normalize();
+                manifold.WorldNormal = worldNormal;
+                manifold.PenetrationDepth = Settings.Epsilon;
 
                 #endregion
 
@@ -757,6 +763,9 @@ namespace FarseerPhysics.Collision
 
                 #region Add Circle-Polygon Penetration Depth generate code
 
+                FVector2 worldNormal = MathUtils.Mul(ref xfA, manifold.LocalNormal);
+                worldNormal.Normalize();
+                manifold.WorldNormal = worldNormal;
                 manifold.PenetrationDepth = radius - length;
 
                 #endregion
@@ -788,7 +797,9 @@ namespace FarseerPhysics.Collision
                 manifold.Points[0] = p0c;
 
                 #region Add Circle-Polygon Penetration Depth generate code
-
+                FVector2 worldNormal = MathUtils.Mul(ref xfA, manifold.LocalNormal);
+                worldNormal.Normalize();
+                manifold.WorldNormal = worldNormal;
                 manifold.PenetrationDepth = radius - length;
 
                 #endregion
@@ -818,8 +829,11 @@ namespace FarseerPhysics.Collision
 
                 #region Add Circle-Polygon Penetration Depth generate code
                 
+                FVector2 worldNormal = MathUtils.Mul(ref xfA, manifold.LocalNormal);
+                worldNormal.Normalize();
+                manifold.WorldNormal = worldNormal;
                 manifold.PenetrationDepth = radius - separation2;
-                UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + manifold.PenetrationDepth);
+                //UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + manifold.PenetrationDepth);
                 #endregion
             }
         }

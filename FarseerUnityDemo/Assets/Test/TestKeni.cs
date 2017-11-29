@@ -133,17 +133,30 @@ public class TestKeni : MonoBehaviour
             int solverIterationCount = 0;
             do
             {
+                solverIterationCount++;
                 targetPositionFound = true;
                 int numberOfBounds = _bounds.Count;
-
+                
                 for (int i = 0; i < numberOfBounds; i++)
                 {
                     Line line = _bounds[i];
 
-                    float distance = FVector2.Dot(line.Normal, currentMovement);
+                    //Vector3 start = new Vector3(line.positoin.X, line.positoin.Y, 0);
+                    
+                    //Vector3 end = start + new Vector3(line.Normal.Y,-line.Normal.X, 0) * 10;
+                    //Debug.DrawLine
+                    //    (start
+                    //    , end
+                    //    , Color.red);
+                    
 
-                    if (distance < AllowedPenetration)
+                    FVector2 vec2 = startPosition + currentMovement - line.positoin;
+                    //float distance = FVector2.Dot(line.Normal, vec2) + 0.01f;
+                    float distance = FVector2.Dot(line.Normal, vec2);
+                    UnityEngine.Debug.LogError("distance : " + distance.ToString("f6")+" normal: "+line.Normal);
+                    if (distance < 0)
                     {
+                        
                         FVector2 correctoin = line.Normal * (-distance);
                         currentMovement += correctoin;
                         targetPositionFound = false;
@@ -152,7 +165,10 @@ public class TestKeni : MonoBehaviour
 
             } while (!targetPositionFound && solverIterationCount < 4);
 
-            if (solverIterationCount >= 4 || FVector2.Dot(currentMovement,desiredMovement) < 0)
+          
+            bool movementDirIsInValid = FVector2.Dot(currentMovement, desiredMovement) < 0;
+           
+            if (solverIterationCount >= 4 || movementDirIsInValid)
             {
                 break;
             }
@@ -162,7 +178,10 @@ public class TestKeni : MonoBehaviour
             UpdateContacts();
 
             hasUnallowedContacts = HasUnallowedContact(currentMovement);
-
+            Debug.LogError("solverIterationCount : " + solverIterationCount + 
+                " movementDirIsInValid-> " + movementDirIsInValid + 
+                " currentMovement->" + currentMovement
+                + "hasUnallowedContacts->" + hasUnallowedContacts);
         } while (hasUnallowedContacts && iterationCount < 4);
 
 
@@ -220,7 +239,7 @@ public class TestKeni : MonoBehaviour
     {
         int oldNumberOfBounds = _bounds.Count;
         int numberOfContacts = _contacts.Count;
-        
+        //Debug.LogError("numberOfContacts->" + numberOfContacts);
         for (int i = 0; i < numberOfContacts; i++)
         {
             var contact = _contacts[i];
@@ -230,7 +249,7 @@ public class TestKeni : MonoBehaviour
             //Debug.LogError("normal->" + normal+ " penetrationDepth->" + penetrationDepth);
             Line line = new Line(normal, this.body.Position + normal * penetrationDepth);
 
-            bool lineIsNew = false;
+            bool lineIsNew = true;
             int numberOfBounds = _bounds.Count;
             for (int j = 0; j < numberOfBounds;j++)
             {
@@ -285,29 +304,77 @@ public class TestKeni : MonoBehaviour
 
 
             contact.Update1();
-            
-            int pointCount = contact.Manifold.PointCount;
-            if (pointCount != 0)
+
+            if(contact.Manifold.PointCount == 0)
             {
-                for (int j = 0; j < pointCount; j++)
-                {
-                    Manifold manifold = contact.Manifold;
-                    ManifoldPoint point = manifold.Points[j];
+                continue;
+            }
+
+            Manifold manifold = contact.Manifold;
+            FVector2 worldNormal = manifold.WorldNormal;
+            FVector2 contactPos = body.GetWorldPoint(manifold.contactPoint);
+
+            Vector3 start = new Vector3(contactPos.X, contactPos.Y, 0);
+            FVector2 _end = contactPos - worldNormal * 1;
+            Vector3 end = new Vector3(_end.X, _end.Y, 0);
+            Debug.DrawLine
+                (start
+                , end
+                , Color.red);
+            _end = contactPos - new FVector2(worldNormal.Y, -worldNormal.X) * 1;
+            end = new Vector3(_end.X, _end.Y, 0);
+            Debug.DrawLine
+                (start
+                , end
+                , Color.green);
+            //Debug.LogError("contactPos-> " + contactPos + " normal->" + worldNormal + " penetrationDepth->" + manifold.PenetrationDepth);
+
+            this._contacts.Add(new CCContact()
+            {
+
+                Position = contactPos,
+                Normal = -worldNormal,
+                PenetrationDepth = manifold.PenetrationDepth
+
+            });
+
+            //int pointCount = contact.Manifold.PointCount;
+            //if (pointCount != 0)
+            //{
+            //    for (int j = 0; j < pointCount; j++)
+            //    {
+            //        Manifold manifold = contact.Manifold;
+            //        ManifoldPoint point = manifold.Points[j];
 
                     
-                    FVector2 contactPos = body.GetWorldPoint(point.LocalPoint);
-                    FVector2 normal = manifold.LocalNormal;
-                    Debug.LogError("contactPos-> " + contactPos+ " normal->" + normal + " penetrationDepth->" + manifold.PenetrationDepth);
-                    this._contacts.Add(new CCContact()
-                    {
+            //        FVector2 contactPos = body.GetWorldPoint(point.LocalPoint);
+            //        FVector2 worldNormal = manifold.WorldNormal;
 
-                        Position = body.GetWorldPoint(point.LocalPoint),
-                        Normal = -manifold.LocalNormal,
-                        PenetrationDepth = manifold.PenetrationDepth
 
-                    });
-                }
-            }
+            //        Vector3 start = new Vector3(contactPos.X, contactPos.Y, 0);
+            //        FVector2 _end = contactPos - worldNormal*manifold.PenetrationDepth;
+            //        Vector3 end = new Vector3(_end.X,_end.Y,0);
+            //        Debug.DrawLine
+            //            (start
+            //            , end
+            //            , Color.red);
+            //        _end = contactPos - new FVector2(worldNormal.Y,-worldNormal.X) * manifold.PenetrationDepth;
+            //        end = new Vector3(_end.X, _end.Y, 0);
+            //        Debug.DrawLine
+            //            (start
+            //            , end
+            //            , Color.green);
+            //        Debug.LogError("contactPos-> " + contactPos+ " normal->" + worldNormal + " penetrationDepth->" + manifold.PenetrationDepth);
+            //        this._contacts.Add(new CCContact()
+            //        {
+
+            //            Position = contactPos,
+            //            Normal = -worldNormal,
+            //            PenetrationDepth = manifold.PenetrationDepth
+
+            //        });
+            //    }
+            //}
         }
 
 
