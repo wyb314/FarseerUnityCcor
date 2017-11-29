@@ -136,7 +136,8 @@ public class PlayerBehavior : TrueSyncBehaviour {
             return;
         }
         TSVector2 moveVelocity = new TSVector2(TrueSyncInput.GetInt(INPUT_KEY_MOVE) * speed / (FP)100,0);
-
+        
+        //UnityEngine.Debug.LogError("In fixed time step : "+Time.inFixedTimeStep);
         this.characterController.Move(moveVelocity,Time.fixedDeltaTime);
 
     }

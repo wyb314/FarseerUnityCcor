@@ -21,7 +21,6 @@ namespace TrueSync.Physics2D.Specialized
         {
             this.world = world;
             this.body = body;
-            this.body.IgnoreGravity = true;
             this.shape = shape;
             this.fixture = this.body.FixtureList[0];
 
@@ -35,6 +34,8 @@ namespace TrueSync.Physics2D.Specialized
 
             TSVector2 desiredMovement = moveVelocity * deltaTime;
 
+            //UnityEngine.Debug.LogError("desiredMovement: " + desiredMovement);
+
             FP desiredMovementLength = desiredMovement.magnitude;
 
             CollectObstacles(desiredMovementLength);
@@ -42,6 +43,10 @@ namespace TrueSync.Physics2D.Specialized
             _desiredPosition = _oldPosition + desiredMovement;
 
             this.Fly(desiredMovementLength);
+
+            //UnityEngine.Debug.LogError("Body LinearVelocity->" + this.body.LinearVelocity);
+
+            this.body.LinearVelocity = TSVector2.zero;
         }
         
         private List<Contact> _obstacles = new List<Contact>();
@@ -103,6 +108,7 @@ namespace TrueSync.Physics2D.Specialized
                 int solverIterationCount = 0;
                 do
                 {
+                    solverIterationCount++;
                     targetPositionFound = true;
                     int numberOfBounds = _bounds.Count;
 
@@ -110,9 +116,10 @@ namespace TrueSync.Physics2D.Specialized
                     {
                         Line line = _bounds[i];
 
-                        FP distance = TSVector2.Dot(line.Normal, currentMovement);
+                        TSVector2 vec2 = this.body.Position + currentMovement - line.positoin;
+                        FP distance = TSVector2.Dot(line.Normal, vec2) + 0.01f;
 
-                        if (distance < AllowedPenetration)
+                        if (distance < Settings.Epsilon)
                         {
                             TSVector2 correctoin = line.Normal * (-distance);
                             currentMovement += correctoin;
@@ -122,7 +129,7 @@ namespace TrueSync.Physics2D.Specialized
 
                 } while (!targetPositionFound && solverIterationCount < 4);
 
-                if (solverIterationCount >= 4 || TSVector2.Dot(currentMovement, desiredMovement) < 0)
+                if (solverIterationCount >= 4 || TSVector2.Dot(currentMovement, desiredMovement) < FP.Zero)
                 {
                     break;
                 }
@@ -142,6 +149,7 @@ namespace TrueSync.Physics2D.Specialized
                 this.body.Position = startPosition;
                 RollbackContacts();
             }
+            
         }
 
         private bool? _hasGroundContact;
@@ -220,8 +228,8 @@ namespace TrueSync.Physics2D.Specialized
             {
                 var contact = _contacts[i];
                 FP val = TSVector2.Dot(contact.Normal, currentMovement);
-                if ((noMovement || val < 0)
-                    && contact.PenetrationDepth > maxPenetrationDepth)
+                if ((noMovement || val < FP.Zero)
+                    && contact.PenetrationDepth > Settings.Epsilon)
                 {
                     return true;
                 }
@@ -254,13 +262,13 @@ namespace TrueSync.Physics2D.Specialized
 
 
                         TSVector2 contactPos = body.GetWorldPoint(point.LocalPoint);
-                        TSVector2 normal = manifold.LocalNormal;
-                        //Debug.LogError("contactPos-> " + contactPos + " normal->" + normal + " penetrationDepth->" + manifold.PenetrationDepth);
+                        TSVector2 normal = -manifold.WorldNormal;
+                        //UnityEngine.Debug.LogError("contactPos-> " + contactPos + " normal->" + normal + " penetrationDepth->" + manifold.PenetrationDepth);
                         this._contacts.Add(new CCContact()
                         {
 
                             Position = body.GetWorldPoint(point.LocalPoint),
-                            Normal = -manifold.LocalNormal,
+                            Normal = -manifold.WorldNormal,
                             PenetrationDepth = manifold.PenetrationDepth
 
                         });

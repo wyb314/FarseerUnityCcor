@@ -44,7 +44,6 @@ namespace TrueSync.Physics2D.Specialized
             {
 
                 contact.Evaluate(ref contact.Manifold, ref bodyA._xf, ref bodyB._xf);
-                UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + contact.Manifold.PenetrationDepth+" local normal->"+contact.Manifold.LocalNormal);
                 touching = contact.Manifold.PointCount > 0;
 
                 // Match old contact ids to new contact ids and copy the
@@ -136,8 +135,8 @@ namespace TrueSync.Physics2D.Specialized
                 //}
             }
 
-            //if (sensor)
-            //    return;
+            if (sensor)
+                return;
 
         }
     }
