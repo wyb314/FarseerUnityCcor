@@ -28,6 +28,8 @@ public class TestKeni : MonoBehaviour
         this.body = fsb.PhysicsBody;
         this.fsb.PhysicsBody.GravityScale = 0;
         this.fixture = this.body.FixtureList[0];
+        
+
         //Debug.LogError("Self BodyId->"+this.body.BodyId);
     }
 	
@@ -38,10 +40,13 @@ public class TestKeni : MonoBehaviour
 	    float v = Input.GetAxis("Vertical");
 
 	    float val = h*h + v*v;
+	    //val = 1;
 	    if (val > 0)
 	    {
             FVector2 moveVelocity = new FVector2(h,v);
-	        moveVelocity.Normalize();
+            //FVector2 moveVelocity = new FVector2(0, -1);
+
+            moveVelocity.Normalize();
 	        moveVelocity = moveVelocity*moveSpeed;
             this.Move(moveVelocity,Time.fixedDeltaTime);
 	        //this.fsb.PhysicsBody.LinearVelocity= new FVector2(h, v) * moveSpeed;
@@ -63,6 +68,8 @@ public class TestKeni : MonoBehaviour
 
         float desiredMovementLength = desiredMovement.Length();
 
+        //UnityEngine.Debug.LogError("desiredMovementLength->" + desiredMovementLength+" fixedTime->"+Time.fixedTime);
+
         CollectObstacles(desiredMovementLength);
 
         _desiredPosition = _oldPosition + desiredMovement;
@@ -80,7 +87,11 @@ public class TestKeni : MonoBehaviour
         }
         AABB aabb;
         this.shape.ComputeAABB(out aabb, ref body.Xf, 0);
+        aabb.LowerBound = aabb.LowerBound - new FVector2(radius);
+        aabb.UpperBound = aabb.UpperBound + new FVector2(radius);
 
+
+        
         this.body.World.QueryAABB(_fixture =>
         {
 
@@ -106,8 +117,8 @@ public class TestKeni : MonoBehaviour
     float AllowedPenetration = 0.01f;
     private void Fly()
     {
+       
         FVector2 desiredMovement = _desiredPosition - _oldPosition;
-
         if (desiredMovement.LengthSquared() < float.Epsilon)
         {
             return;
@@ -156,8 +167,9 @@ public class TestKeni : MonoBehaviour
                     //UnityEngine.Debug.LogError("distance : " + distance.ToString("f6")+" normal: "+line.Normal);
                     if (distance < 0)
                     {
-                        
+                       
                         FVector2 correctoin = line.Normal * (-distance);
+                        //Debug.LogError("correctoin->" + correctoin + " fixedTime->" + UnityEngine.Time.fixedTime);
                         currentMovement += correctoin;
                         targetPositionFound = false;
                     }
@@ -173,17 +185,23 @@ public class TestKeni : MonoBehaviour
                 break;
             }
 
-            this.body.Position = startPosition + currentMovement;
+            
+            this.body.Xf.p = startPosition + currentMovement;
+            //this.body.SetTransformIgnoreContacts(ref startPosition,this.body.Rotation);
+            //this.body.Position = startPosition + currentMovement;
 
             UpdateContacts();
 
             hasUnallowedContacts = HasUnallowedContact(currentMovement);
-            //Debug.LogError("solverIterationCount : " + solverIterationCount + 
-            //    " movementDirIsInValid-> " + movementDirIsInValid + 
+            //Debug.LogError("solverIterationCount : " + solverIterationCount +
+            //    " movementDirIsInValid-> " + movementDirIsInValid +
             //    " currentMovement->" + currentMovement
-            //    + "hasUnallowedContacts->" + hasUnallowedContacts);
+            //    + "hasUnallowedContacts->" + hasUnallowedContacts+ " iterationCount->" + iterationCount+ " fixedTime->" + UnityEngine.Time.fixedTime);
         } while (hasUnallowedContacts && iterationCount < 4);
 
+        //Debug.LogError("Movement->"+(this.body.Position - startPosition)+" fixedTime->"+UnityEngine.Time.fixedTime);
+
+        //UnityEngine.Debug.LogError("body p->" + this.body.Xf.p + " fixedTime->" + UnityEngine.Time.fixedTime);
 
         if (hasUnallowedContacts)
         {
@@ -377,7 +395,7 @@ public class TestKeni : MonoBehaviour
             //}
         }
 
-        Debug.LogError("this._contacts count : " + this._contacts.Count);
+        //Debug.LogError("this._contacts count : " + this._contacts.Count);
 
 
     }
@@ -425,7 +443,7 @@ public static class ContactExtend
         }
         else
         {
-            
+         
             contact.Evaluate(ref contact.Manifold, ref bodyA.Xf, ref bodyB.Xf);
             touching = contact.Manifold.PointCount > 0;
 

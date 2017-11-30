@@ -276,6 +276,8 @@ namespace FarseerPhysics.Dynamics.Contacts
 
             Manifold.PointCount = 0;
             Manifold.PenetrationDepth = 0;
+            Manifold.WorldNormal = FVector2.Zero;
+            Manifold.contactPoint = FVector2.Zero;
 
             NodeA.Contact = null;
             NodeA.Prev = null;

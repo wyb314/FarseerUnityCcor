@@ -669,9 +669,12 @@ namespace FarseerPhysics.Collision
         {
             manifold.PointCount = 0;
 
+            
             // Compute circle position in the frame of the polygon.
             FVector2 c = MathUtils.Mul(ref xfB, circleB.Position);
             FVector2 cLocal = MathUtils.MulT(ref xfA, c);
+
+            UnityEngine.Debug.LogError("c->" + c + " fixedTime->" + UnityEngine.Time.fixedTime);
 
             // Find the min separating edge.
             int normalIndex = 0;
@@ -688,10 +691,11 @@ namespace FarseerPhysics.Collision
 
                 if (s > radius)
                 {
+                    UnityEngine.Debug.LogError(" easeOut fixedTime->" + UnityEngine.Time.fixedTime);
+
                     // Early out.
                     return;
                 }
-
                 if (s > separation)//圆渗透到多边形里的最大深度
                 {
                     separation = s;
@@ -734,6 +738,8 @@ namespace FarseerPhysics.Collision
 
                 return;
             }
+
+           
 
             // Compute barycentric coordinates
             float u1 = (cLocal.X - v1.X) * (v2.X - v1.X) + (cLocal.Y - v1.Y) * (v2.Y - v1.Y);
@@ -785,6 +791,7 @@ namespace FarseerPhysics.Collision
                     return;
                 }
 
+
                 manifold.PointCount = 1;
                 manifold.Type = ManifoldType.FaceA;
                 manifold.LocalNormal = cLocal - v2;
@@ -818,13 +825,15 @@ namespace FarseerPhysics.Collision
                 FVector2 faceCenter = 0.5f * (v1 + v2);
                 FVector2 value1 = cLocal - faceCenter;
                 FVector2 value2 = polygonA.Normals[vertIndex1];
-                UnityEngine.Debug.LogError("value2->" + value2);
                 float separation2 = value1.X * value2.X + value1.Y * value2.Y;
+                
+                //UnityEngine.Debug.LogError("separation2 : " + separation2+" radius->"+ radius+ " c->" + c+ " fixedTime->" + UnityEngine.Time.fixedTime);
+
                 if (separation2 > radius)
                 {
                     return;
                 }
-
+                
                 manifold.PointCount = 1;
                 manifold.Type = ManifoldType.FaceA;
                 manifold.LocalNormal = polygonA.Normals[vertIndex1];
@@ -844,11 +853,15 @@ namespace FarseerPhysics.Collision
                 worldNormal.Normalize();
                 manifold.WorldNormal = -worldNormal;
                 //UnityEngine.Debug.LogError("manifold.WorldNormal : " + manifold.WorldNormal);
-                manifold.PenetrationDepth = circleB.Radius - separation2;
+                manifold.PenetrationDepth = radius - separation;
 
                 FVector2 contactPoint = c - worldNormal * radius;
                 manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
-                //UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + manifold.PenetrationDepth);
+
+                UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + manifold.PenetrationDepth + " fixedTime->" +
+                    UnityEngine.Time.fixedTime + " separation->" + separation + " separation2->" + separation2);
+
+                //UnityEngine.Debug.LogError(" xfBHashcode : " + xfB.GetHashCode());
                 #endregion
             }
         }
