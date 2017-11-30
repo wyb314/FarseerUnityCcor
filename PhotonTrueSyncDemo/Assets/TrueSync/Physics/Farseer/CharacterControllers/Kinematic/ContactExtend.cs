@@ -135,8 +135,8 @@ namespace TrueSync.Physics2D.Specialized
                 //}
             }
 
-            if (sensor)
-                return;
+            //if (sensor)
+            //    return;
 
         }
     }

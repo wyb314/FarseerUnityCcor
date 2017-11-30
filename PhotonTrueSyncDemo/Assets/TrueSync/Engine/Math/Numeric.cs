@@ -7,7 +7,7 @@ namespace TrueSync
     {
         public static bool AreEqual(FP value1, FP value2, FP epsilon)
         {
-            if (epsilon <= 0.0f)
+            if (epsilon <= FP.Zero)
                 throw new ArgumentOutOfRangeException("epsilon", "Epsilon value must be greater than 0.");
 
             // Infinity values have to be handled carefully because the check with the epsilon tolerance

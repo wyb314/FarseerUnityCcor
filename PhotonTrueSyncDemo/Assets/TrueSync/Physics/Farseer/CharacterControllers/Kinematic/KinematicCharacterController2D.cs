@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace TrueSync.Physics2D.Specialized
 {
@@ -81,12 +82,14 @@ namespace TrueSync.Physics2D.Specialized
         FP AllowedPenetration = 0.01f;
         private void Fly(FP desiredMovementLength)
         {
-            TSVector2 desiredMovement = _desiredPosition - _oldPosition;
-
-            if ( Numeric.IsZero(desiredMovementLength, Numeric.EpsilonFSquared))
+            if (Numeric.IsZero(desiredMovementLength, Numeric.EpsilonFSquared))
             {
                 return;
             }
+
+            TSVector2 desiredMovement = _desiredPosition - _oldPosition;
+
+            
 
             this._bounds.Clear();
 
@@ -116,10 +119,12 @@ namespace TrueSync.Physics2D.Specialized
                     {
                         Line line = _bounds[i];
 
-                        TSVector2 vec2 = this.body.Position + currentMovement - line.positoin;
-                        FP distance = TSVector2.Dot(line.Normal, vec2) + 0.01f;
+                        TSVector2 vec2 = startPosition + currentMovement - line.positoin;
+                        //FP distance = TSVector2.Dot(line.Normal, vec2) + FP.EN2;
+                        FP distance = TSVector2.Dot(line.Normal, vec2);
 
-                        if (distance < Settings.Epsilon)
+
+                        if (distance < FP.Zero)
                         {
                             TSVector2 correctoin = line.Normal * (-distance);
                             currentMovement += correctoin;
@@ -194,9 +199,9 @@ namespace TrueSync.Physics2D.Specialized
                 FP penetrationDepth = contact.PenetrationDepth;
 
                 //Debug.LogError("normal->" + normal+ " penetrationDepth->" + penetrationDepth);
-                Line line = new Line(normal, this.body.Position + normal * penetrationDepth);
+                Line line = new Line(normal, position + normal * penetrationDepth);
 
-                bool lineIsNew = false;
+                bool lineIsNew = true;
                 int numberOfBounds = _bounds.Count;
                 for (int j = 0; j < numberOfBounds; j++)
                 {
@@ -251,29 +256,38 @@ namespace TrueSync.Physics2D.Specialized
 
 
                 contact.Update1();
-
-                int pointCount = contact.Manifold.PointCount;
-                if (pointCount != 0)
+                if (contact.Manifold.PointCount == 0)
                 {
-                    for (int j = 0; j < pointCount; j++)
-                    {
-                        Manifold manifold = contact.Manifold;
-                        ManifoldPoint point = manifold.Points[j];
-
-
-                        TSVector2 contactPos = body.GetWorldPoint(point.LocalPoint);
-                        TSVector2 normal = -manifold.WorldNormal;
-                        //UnityEngine.Debug.LogError("contactPos-> " + contactPos + " normal->" + normal + " penetrationDepth->" + manifold.PenetrationDepth);
-                        this._contacts.Add(new CCContact()
-                        {
-
-                            Position = body.GetWorldPoint(point.LocalPoint),
-                            Normal = -manifold.WorldNormal,
-                            PenetrationDepth = manifold.PenetrationDepth
-
-                        });
-                    }
+                    continue;
                 }
+
+                Manifold manifold = contact.Manifold;
+                TSVector2 worldNormal = manifold.WorldNormal;
+                TSVector2 contactPos = body.GetWorldPoint(manifold.contactPoint);
+
+                UnityEngine.Vector3 start = new UnityEngine.Vector3(contactPos.x.AsFloat(), contactPos.y.AsFloat(), 0);
+                TSVector2 _end = contactPos - worldNormal * 1;
+                UnityEngine.Vector3 end = new UnityEngine.Vector3(_end.x.AsFloat(), _end.y.AsFloat(), 0);
+                UnityEngine.Debug.DrawLine
+                    (start
+                    , end
+                    , UnityEngine.Color.red);
+                _end = contactPos - new TSVector2(worldNormal.y.AsFloat(), -worldNormal.x.AsFloat()) * 1;
+                end = new Vector3(_end.x.AsFloat(), _end.y.AsFloat(), 0);
+                Debug.DrawLine
+                    (start
+                    , end
+                    , Color.green);
+                //Debug.LogError("contactPos-> " + contactPos + " normal->" + worldNormal + " penetrationDepth->" + manifold.PenetrationDepth);
+
+                this._contacts.Add(new CCContact()
+                {
+
+                    Position = contactPos,
+                    Normal = -worldNormal,
+                    PenetrationDepth = manifold.PenetrationDepth
+
+                });
             }
 
 

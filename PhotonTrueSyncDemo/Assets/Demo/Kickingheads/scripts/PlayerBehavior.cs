@@ -11,7 +11,9 @@ public class PlayerBehavior : TrueSyncBehaviour {
     /**
     * @brief Key to set/get player's movement from {@link TrueSyncInput}.
     **/
-    private const byte INPUT_KEY_MOVE = 0;
+    private const byte INPUT_KEY_MOVE_X = 0;
+
+    private const byte INPUT_KEY_MOVE_Y = 2;
 
     /**
     * @brief Key to set/get player's jump from {@link TrueSyncInput}.
@@ -98,11 +100,15 @@ public class PlayerBehavior : TrueSyncBehaviour {
     * @brief Sets player inputs.
     **/
     public override void OnSyncedInput () {
-		int movement = (int)(Input.GetAxis("Horizontal") * 100);
+		int movementX = (int)(Input.GetAxis("Horizontal") * 100);
         byte jump = Input.GetButton("Jump") ? (byte)1 : (byte)0;
 
-        TrueSyncInput.SetInt(INPUT_KEY_MOVE, movement);
-        TrueSyncInput.SetByte(INPUT_KEY_JUMP, jump);
+        int movementY = (int)(Input.GetAxis("Vertical") * 100);
+
+        TrueSyncInput.SetInt(INPUT_KEY_MOVE_X, movementX);
+        TrueSyncInput.SetInt(INPUT_KEY_MOVE_Y, movementY);
+
+        //TrueSyncInput.SetByte(INPUT_KEY_JUMP, jump);
 	}
 
     /**
@@ -130,12 +136,13 @@ public class PlayerBehavior : TrueSyncBehaviour {
     {
         UpdateAnimations();
 
-        int key = TrueSyncInput.GetInt(INPUT_KEY_MOVE);
-        if (key == 0)
+        int x_key = TrueSyncInput.GetInt(INPUT_KEY_MOVE_X);
+        int y_Key = TrueSyncInput.GetInt(INPUT_KEY_MOVE_Y);
+        if (x_key == 0 && y_Key == 0)
         {
             return;
         }
-        TSVector2 moveVelocity = new TSVector2(TrueSyncInput.GetInt(INPUT_KEY_MOVE) * speed / (FP)100,0);
+        TSVector2 moveVelocity = new TSVector2(TrueSyncInput.GetInt(INPUT_KEY_MOVE_X) * speed / (FP)100, TrueSyncInput.GetInt(INPUT_KEY_MOVE_Y) * speed / (FP)100);
         
         //UnityEngine.Debug.LogError("In fixed time step : "+Time.inFixedTimeStep);
         this.characterController.Move(moveVelocity,Time.fixedDeltaTime);

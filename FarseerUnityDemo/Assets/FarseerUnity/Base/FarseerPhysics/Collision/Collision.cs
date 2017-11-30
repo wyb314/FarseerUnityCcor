@@ -727,7 +727,7 @@ namespace FarseerPhysics.Collision
                 manifold.WorldNormal = -worldNormal;
                 manifold.PenetrationDepth = Settings.Epsilon;
 
-                FVector2 contactPoint = c - worldNormal * circleB.Radius;
+                FVector2 contactPoint = c - worldNormal * radius;
                 manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
 
                 #endregion
@@ -809,7 +809,7 @@ namespace FarseerPhysics.Collision
                 manifold.WorldNormal = -worldNormal;
                 manifold.PenetrationDepth = radius - length;
 
-                FVector2 contactPoint = c - worldNormal * circleB.Radius;
+                FVector2 contactPoint = c - worldNormal * radius;
                 manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
                 #endregion
             }
@@ -818,6 +818,7 @@ namespace FarseerPhysics.Collision
                 FVector2 faceCenter = 0.5f * (v1 + v2);
                 FVector2 value1 = cLocal - faceCenter;
                 FVector2 value2 = polygonA.Normals[vertIndex1];
+                UnityEngine.Debug.LogError("value2->" + value2);
                 float separation2 = value1.X * value2.X + value1.Y * value2.Y;
                 if (separation2 > radius)
                 {
@@ -843,9 +844,9 @@ namespace FarseerPhysics.Collision
                 worldNormal.Normalize();
                 manifold.WorldNormal = -worldNormal;
                 //UnityEngine.Debug.LogError("manifold.WorldNormal : " + manifold.WorldNormal);
-                manifold.PenetrationDepth = radius - separation2;
+                manifold.PenetrationDepth = circleB.Radius - separation2;
 
-                FVector2 contactPoint = c - worldNormal * circleB.Radius;
+                FVector2 contactPoint = c - worldNormal * radius;
                 manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
                 //UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + manifold.PenetrationDepth);
                 #endregion

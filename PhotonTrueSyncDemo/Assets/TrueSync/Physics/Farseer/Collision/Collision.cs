@@ -163,6 +163,7 @@ namespace TrueSync.Physics2D
 
         public ManifoldType Type;
 
+        public TSVector2 contactPoint;
         public TSVector2 WorldNormal;
         public FP PenetrationDepth;
     }
@@ -717,6 +718,8 @@ namespace TrueSync.Physics2D
             //manifold.LocalNormal = d;
             manifold.WorldNormal = d;
             manifold.PenetrationDepth = radius - FP.Sqrt(distSqr);
+            TSVector2 contactPoint = pA + d*circleA.Radius;
+            manifold.contactPoint = MathUtils.MulT(ref xfA, contactPoint);
 
             #endregion
         }
@@ -783,10 +786,16 @@ namespace TrueSync.Physics2D
 
                 manifold.Points[0] = p0;
 
-                TSVector2 worldNormal = MathUtils.Mul(ref xfA, manifold.LocalNormal);
+                #region Add Circle-Polygon Penetration Depth generate code
+                TSVector2 worldNormal = MathUtils.Mul(xfA.q, manifold.LocalNormal);
                 worldNormal.Normalize();
-                manifold.WorldNormal = worldNormal;
-                //UnityEngine.Debug.LogError("separation < Settings.Epsilon!");
+                manifold.WorldNormal = -worldNormal;
+                manifold.PenetrationDepth = Settings.Epsilon;
+
+                TSVector2 contactPoint = c - worldNormal * radius;
+                manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
+                #endregion
+
                 return;
             }
 
@@ -820,9 +829,15 @@ namespace TrueSync.Physics2D
                 manifold.Points[0] = p0b;
 
                 #region Add Circle-Polygon Penetration Depth generate code
-                manifold.WorldNormal = MathUtils.Mul(ref xfA, manifold.LocalNormal);
+
+                TSVector2 worldNormal = MathUtils.Mul(xfA.q, manifold.LocalNormal);
+                worldNormal.Normalize();
+                manifold.WorldNormal = -worldNormal;
                 manifold.PenetrationDepth = radius - length;
 
+                TSVector2 contactPoint = c - worldNormal * circleB.Radius;
+                manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
+                
                 #endregion
             }
             else if (u2 <= 0.0f)
@@ -852,8 +867,13 @@ namespace TrueSync.Physics2D
 
                 #region Add Circle-Polygon Penetration Depth generate code
 
-                manifold.WorldNormal = MathUtils.Mul(ref xfA, manifold.LocalNormal);
+                TSVector2 worldNormal = MathUtils.Mul(xfA.q, manifold.LocalNormal);
+                worldNormal.Normalize();
+                manifold.WorldNormal = -worldNormal;
                 manifold.PenetrationDepth = radius - length;
+
+                TSVector2 contactPoint = c - worldNormal * circleB.Radius;
+                manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
 
                 #endregion
             }
@@ -881,11 +901,16 @@ namespace TrueSync.Physics2D
                 manifold.Points[0] = p0d;
 
                 #region Add Circle-Polygon Penetration Depth generate code
-                TSVector2 worldNormal = MathUtils.Mul(ref xfA, manifold.LocalNormal);
+                TSVector2 worldNormal = MathUtils.Mul(xfA.q, polygonA.Normals[normalIndex]);
                 worldNormal.Normalize();
-                manifold.WorldNormal = worldNormal;
+                manifold.WorldNormal = -worldNormal;
                 manifold.PenetrationDepth = radius - separation2;
-                //UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + manifold.PenetrationDepth);
+
+                UnityEngine.Debug.LogError("penetrationDepth : "+ manifold.PenetrationDepth);
+
+                TSVector2 contactPoint = c - worldNormal* radius;
+                manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
+
                 #endregion
             }
         }

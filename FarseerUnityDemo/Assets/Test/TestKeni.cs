@@ -247,7 +247,7 @@ public class TestKeni : MonoBehaviour
             float penetrationDepth = contact.PenetrationDepth;
 
             //Debug.LogError("normal->" + normal+ " penetrationDepth->" + penetrationDepth);
-            Line line = new Line(normal, this.body.Position + normal * penetrationDepth);
+            Line line = new Line(normal, position + normal * penetrationDepth);
 
             bool lineIsNew = true;
             int numberOfBounds = _bounds.Count;
