@@ -674,7 +674,7 @@ namespace FarseerPhysics.Collision
             FVector2 c = MathUtils.Mul(ref xfB, circleB.Position);
             FVector2 cLocal = MathUtils.MulT(ref xfA, c);
 
-            UnityEngine.Debug.LogError("c->" + c + " fixedTime->" + UnityEngine.Time.fixedTime);
+            //UnityEngine.Debug.LogError("c->" + c + " fixedTime->" + UnityEngine.Time.fixedTime);
 
             // Find the min separating edge.
             int normalIndex = 0;
@@ -691,7 +691,7 @@ namespace FarseerPhysics.Collision
 
                 if (s > radius)
                 {
-                    UnityEngine.Debug.LogError(" easeOut fixedTime->" + UnityEngine.Time.fixedTime);
+                    //UnityEngine.Debug.LogError(" easeOut fixedTime->" + UnityEngine.Time.fixedTime);
 
                     // Early out.
                     return;
@@ -729,7 +729,7 @@ namespace FarseerPhysics.Collision
                 FVector2 worldNormal = MathUtils.Mul(xfA.q, manifold.LocalNormal);
                 worldNormal.Normalize();
                 manifold.WorldNormal = -worldNormal;
-                manifold.PenetrationDepth = Settings.Epsilon;
+                manifold.PenetrationDepth = separation;
 
                 FVector2 contactPoint = c - worldNormal * radius;
                 manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
@@ -853,13 +853,13 @@ namespace FarseerPhysics.Collision
                 worldNormal.Normalize();
                 manifold.WorldNormal = -worldNormal;
                 //UnityEngine.Debug.LogError("manifold.WorldNormal : " + manifold.WorldNormal);
-                manifold.PenetrationDepth = radius - separation;
+                manifold.PenetrationDepth = circleB.Radius - separation2;
 
-                FVector2 contactPoint = c - worldNormal * radius;
+                FVector2 contactPoint = c - worldNormal * circleB.Radius;
                 manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
 
                 UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + manifold.PenetrationDepth + " fixedTime->" +
-                    UnityEngine.Time.fixedTime + " separation->" + separation + " separation2->" + separation2);
+                    UnityEngine.Time.fixedTime);
 
                 //UnityEngine.Debug.LogError(" xfBHashcode : " + xfB.GetHashCode());
                 #endregion

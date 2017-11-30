@@ -906,7 +906,7 @@ namespace TrueSync.Physics2D
                 manifold.WorldNormal = -worldNormal;
                 manifold.PenetrationDepth = radius - separation2;
 
-                UnityEngine.Debug.LogError("penetrationDepth : "+ manifold.PenetrationDepth);
+                //UnityEngine.Debug.LogError("penetrationDepth : "+ manifold.PenetrationDepth);
 
                 TSVector2 contactPoint = c - worldNormal* radius;
                 manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);

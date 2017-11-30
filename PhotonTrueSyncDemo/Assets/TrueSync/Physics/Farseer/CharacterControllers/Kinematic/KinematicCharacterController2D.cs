@@ -59,7 +59,8 @@ namespace TrueSync.Physics2D.Specialized
             }
             AABB aabb;
             this.shape.ComputeAABB(out aabb, ref body._xf, 0);
-            
+            aabb.LowerBound = aabb.LowerBound - new TSVector2(radius);
+            aabb.UpperBound = aabb.UpperBound + new TSVector2(radius);
             this.world.QueryAABB(_fixture =>
             {
                 if (_fixture != this.fixture)
@@ -140,7 +141,9 @@ namespace TrueSync.Physics2D.Specialized
                 }
 
                 //UnityEngine.Debug.LogError("currentMovement->" + currentMovement);
-                this.body.Position = startPosition + currentMovement;
+                //this.body.Position = startPosition + currentMovement;
+                TSVector2 targetPos = startPosition + currentMovement;
+                this.body.SetTransformIgnoreContacts(ref targetPos,this.body._xf.q.GetAngle());
 
                 UpdateContacts();
 

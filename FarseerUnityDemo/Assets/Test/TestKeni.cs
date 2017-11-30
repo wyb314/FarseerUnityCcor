@@ -86,6 +86,11 @@ public class TestKeni : MonoBehaviour
             this._obstacles.Clear();
         }
         AABB aabb;
+
+        //FVector2 p = transform.p + MathUtils.Mul(transform.q, Position);
+        //aabb.LowerBound = new FVector2(p.X - Radius, p.Y - Radius);
+        //aabb.UpperBound = new FVector2(p.X + Radius, p.Y + Radius);
+
         this.shape.ComputeAABB(out aabb, ref body.Xf, 0);
         aabb.LowerBound = aabb.LowerBound - new FVector2(radius);
         aabb.UpperBound = aabb.UpperBound + new FVector2(radius);
@@ -186,9 +191,9 @@ public class TestKeni : MonoBehaviour
             }
 
             
-            this.body.Xf.p = startPosition + currentMovement;
+            //this.body.Xf.p = startPosition + currentMovement;
             //this.body.SetTransformIgnoreContacts(ref startPosition,this.body.Rotation);
-            //this.body.Position = startPosition + currentMovement;
+            this.body.Position = startPosition + currentMovement;
 
             UpdateContacts();
 
