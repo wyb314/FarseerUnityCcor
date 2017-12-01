@@ -650,6 +650,8 @@ namespace FarseerPhysics.Collision
             FVector2 contactPoint = pA + d*circleA.Radius;
             manifold.contactPoint = MathUtils.MulT(ref xfA, contactPoint);
 
+            UnityEngine.Debug.LogError("circle2circle manifold.PenetrationDepth : " + manifold.PenetrationDepth + " fixedTime->" +
+                   UnityEngine.Time.fixedTime);
 
             #endregion
 
@@ -858,7 +860,7 @@ namespace FarseerPhysics.Collision
                 FVector2 contactPoint = c - worldNormal * circleB.Radius;
                 manifold.contactPoint = MathUtils.MulT(ref xfB, contactPoint);
 
-                UnityEngine.Debug.LogError("manifold.PenetrationDepth : " + manifold.PenetrationDepth + " fixedTime->" +
+                UnityEngine.Debug.LogError("circle2Polygon manifold.PenetrationDepth : " + manifold.PenetrationDepth + " fixedTime->" +
                     UnityEngine.Time.fixedTime);
 
                 //UnityEngine.Debug.LogError(" xfBHashcode : " + xfB.GetHashCode());

@@ -153,27 +153,34 @@ public class TestKeni : MonoBehaviour
                 targetPositionFound = true;
                 int numberOfBounds = _bounds.Count;
                 
+                //UnityEngine.Debug.LogError("numberOfBounds->" + numberOfBounds);
                 for (int i = 0; i < numberOfBounds; i++)
                 {
                     Line line = _bounds[i];
 
                     //Vector3 start = new Vector3(line.positoin.X, line.positoin.Y, 0);
-                    
+
                     //Vector3 end = start + new Vector3(line.Normal.Y,-line.Normal.X, 0) * 10;
                     //Debug.DrawLine
                     //    (start
                     //    , end
                     //    , Color.red);
+
                     
+                    if (FVector2.Dot(line.Normal,currentMovement) >= 0)
+                    {
+                        continue;
+                    }
 
                     FVector2 vec2 = startPosition + currentMovement - line.positoin;
                     //float distance = FVector2.Dot(line.Normal, vec2) + 0.01f;
                     float distance = FVector2.Dot(line.Normal, vec2);
+                    //UnityEngine.Debug.LogError("i->" + i + " line Normal->" + line.Normal+ "distance->" + distance+ " solverIterationCount->" + solverIterationCount+ " iterationCount->" + iterationCount);
                     //UnityEngine.Debug.LogError("distance : " + distance.ToString("f6")+" normal: "+line.Normal);
                     if (distance < 0)
                     {
                        
-                        FVector2 correctoin = line.Normal * (-distance);
+                        FVector2 correctoin = line.Normal * (-distance + 0.01f);
                         //Debug.LogError("correctoin->" + correctoin + " fixedTime->" + UnityEngine.Time.fixedTime);
                         currentMovement += correctoin;
                         targetPositionFound = false;
@@ -210,6 +217,7 @@ public class TestKeni : MonoBehaviour
 
         if (hasUnallowedContacts)
         {
+            UnityEngine.Debug.LogError("RollbackContacts!");
             this.body.Position = startPosition;
             RollbackContacts();
         }
@@ -262,7 +270,7 @@ public class TestKeni : MonoBehaviour
     {
         int oldNumberOfBounds = _bounds.Count;
         int numberOfContacts = _contacts.Count;
-        //Debug.LogError("numberOfContacts->" + numberOfContacts);
+        Debug.LogError("numberOfContacts->" + numberOfContacts);
         for (int i = 0; i < numberOfContacts; i++)
         {
             var contact = _contacts[i];
@@ -421,10 +429,11 @@ public static class ContactExtend
 {
     internal static void Update1(this Contact contact)
     {
-        Manifold oldManifold = contact.Manifold;
 
+        //Manifold oldManifold = contact.Manifold;
+        
             // Re-enable this contact.
-        contact.Flags |= ContactFlags.Enabled;
+        //contact.Flags |= ContactFlags.Enabled;
 
         bool touching;
         bool wasTouching = (contact.Flags & ContactFlags.Touching) == ContactFlags.Touching;
@@ -434,6 +443,9 @@ public static class ContactExtend
         Body bodyA = contact.FixtureA.Body;
         Body bodyB = contact.FixtureB.Body;
 
+        contact.Evaluate(ref contact.Manifold, ref bodyA.Xf, ref bodyB.Xf);
+        //UnityEngine.Debug.LogError("Manifold.PointCount->" + contact.Manifold.PointCount+" fixedTime->"+UnityEngine.Time.fixedTime);
+        return;
         //contact.Evaluate(ref contact.Manifold, ref bodyA.Xf, ref bodyB.Xf);
         //return;
         // Is this contact a sensor?
@@ -451,35 +463,35 @@ public static class ContactExtend
          
             contact.Evaluate(ref contact.Manifold, ref bodyA.Xf, ref bodyB.Xf);
             touching = contact.Manifold.PointCount > 0;
-
+            return;
             // Match old contact ids to new contact ids and copy the
             // stored impulses to warm start the solver.
-            for (int i = 0; i < contact.Manifold.PointCount; ++i)
-            {
-                ManifoldPoint mp2 = contact.Manifold.Points[i];
-                mp2.NormalImpulse = 0.0f;
-                mp2.TangentImpulse = 0.0f;
-                ContactID id2 = mp2.Id;
+            //for (int i = 0; i < contact.Manifold.PointCount; ++i)
+            //{
+            //    ManifoldPoint mp2 = contact.Manifold.Points[i];
+            //    mp2.NormalImpulse = 0.0f;
+            //    mp2.TangentImpulse = 0.0f;
+            //    ContactID id2 = mp2.Id;
 
-                for (int j = 0; j < oldManifold.PointCount; ++j)
-                {
-                    ManifoldPoint mp1 = oldManifold.Points[j];
+            //    for (int j = 0; j < oldManifold.PointCount; ++j)
+            //    {
+            //        ManifoldPoint mp1 = oldManifold.Points[j];
 
-                    if (mp1.Id.Key == id2.Key)
-                    {
-                        mp2.NormalImpulse = mp1.NormalImpulse;
-                        mp2.TangentImpulse = mp1.TangentImpulse;
-                        break;
-                    }
-                }
-                contact.Manifold.Points[i] = mp2;
-            }
+            //        if (mp1.Id.Key == id2.Key)
+            //        {
+            //            mp2.NormalImpulse = mp1.NormalImpulse;
+            //            mp2.TangentImpulse = mp1.TangentImpulse;
+            //            break;
+            //        }
+            //    }
+            //    contact.Manifold.Points[i] = mp2;
+            //}
 
-            if (touching != wasTouching)
-            {
-                bodyA.Awake = true;
-                bodyB.Awake = true;
-            }
+            //if (touching != wasTouching)
+            //{
+            //    bodyA.Awake = true;
+            //    bodyB.Awake = true;
+            //}
         }
 
         if (touching)
@@ -541,8 +553,8 @@ public static class ContactExtend
             //}
         }
 
-        if (sensor)
-            return;
+        //if (sensor)
+        //    return;
     
     }   
 }
