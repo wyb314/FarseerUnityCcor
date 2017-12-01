@@ -180,7 +180,7 @@ public class TestKeni : MonoBehaviour
                     if (distance < 0)
                     {
                        
-                        FVector2 correctoin = line.Normal * (-distance + 0.01f);
+                        FVector2 correctoin = line.Normal * (-distance + 0.001f);
                         //Debug.LogError("correctoin->" + correctoin + " fixedTime->" + UnityEngine.Time.fixedTime);
                         currentMovement += correctoin;
                         targetPositionFound = false;

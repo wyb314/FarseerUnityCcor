@@ -127,7 +127,7 @@ namespace TrueSync.Physics2D.Specialized
 
                         if (distance < FP.Zero)
                         {
-                            TSVector2 correctoin = line.Normal * (-distance);
+                            TSVector2 correctoin = line.Normal * (-distance + FP.EN3);
                             currentMovement += correctoin;
                             targetPositionFound = false;
                         }
